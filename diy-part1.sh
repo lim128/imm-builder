@@ -5,3 +5,4 @@ git clone --depth 1 -b v5 --single-branch https://github.com/sbwml/luci-app-mosd
 git clone --depth 1 -b master https://github.com/destan19/OpenAppFilter.git package/OpenAppFilter
 git clone --depth 1 -b main --single-branch https://github.com/sbwml/luci-app-openlist2.git package/luci-app-openlist2
 git clone --depth 1 -b master https://github.com/tty228/luci-app-wechatpush.git package/luci-app-wechatpush
+git clone --depth 1 -b main --single-branch https://github.com/sirpdboy/luci-app-timecontrol.git package/luci-app-timecontrol
