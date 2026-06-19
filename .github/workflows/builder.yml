@@ -4,10 +4,14 @@ on:
   repository_dispatch:
     types: [Builder]
   workflow_dispatch:
+    inputs:
+      tag:
+        description: '要编译的版本标签'
+        required: false
+        default: 'v25.12.0'
 
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: "v25.12.0"
   FEEDS_CONF: feeds.conf.default
   CONFIG_FILE: .config
   DIY_P1_SH: diy-part1.sh
@@ -20,6 +24,21 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
+    - name: 设置编译分支
+      id: set_branch
+      run: |
+        # 优先使用 repository_dispatch 传递的 tag，否则使用 workflow_dispatch 手动输入的 tag，默认使用 v25.12.0
+        if [ -n "${{ github.event.client_payload.tag }}" ]; then
+          REPO_BRANCH="${{ github.event.client_payload.tag }}"
+        elif [ -n "${{ github.event.inputs.tag }}" ]; then
+          REPO_BRANCH="${{ github.event.inputs.tag }}"
+        else
+          REPO_BRANCH="v25.12.0"
+        fi
+        echo "REPO_BRANCH=$REPO_BRANCH" >> $GITHUB_ENV
+        echo "REPO_BRANCH=$REPO_BRANCH" >> $GITHUB_OUTPUT
+        echo "将使用分支/标签: $REPO_BRANCH"
+
     - name: 检出代码
       uses: actions/checkout@main
 
@@ -57,8 +76,11 @@ jobs:
       working-directory: /workdir
       run: |
         df -hT $PWD
-        git clone -b ${{ env.REPO_BRANCH }} --single-branch --depth 1 --filter=blob:none ${{ env.REPO_URL }} openwrt
+        # 使用动态的 REPO_BRANCH
+        git clone -b $REPO_BRANCH --single-branch --depth 1 --filter=blob:none ${{ env.REPO_URL }} openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
+      env:
+        REPO_BRANCH: ${{ steps.set_branch.outputs.REPO_BRANCH }}
 
     - name: DIY1
       run: |
@@ -112,11 +134,13 @@ jobs:
       id: tag
       if: ${{ steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled() }}
       run: |
-        echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
-        cat > release.txt << 'EOF'
+        # 使用编译的版本标签作为 release 标签的一部分
+        VERSION_TAG="${{ steps.set_branch.outputs.REPO_BRANCH }}"
+        echo "release_tag=$(date +"%Y.%m.%d-%H%M")-${VERSION_TAG#v}" >> $GITHUB_OUTPUT
+        cat > release.txt << EOF
         - 设备: r3s
         - 源码: ${{ env.REPO_URL }}
-        - 版本: ${{ env.REPO_BRANCH }}
+        - 版本: ${{ steps.set_branch.outputs.REPO_BRANCH }}
         EOF
         echo "status=success" >> $GITHUB_OUTPUT
 
