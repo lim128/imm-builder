@@ -1,7 +1,7 @@
 name: Checker
 env:
   REPO_URL: https://github.com/immortalwrt/immortalwrt
-  REPO_BRANCH: "openwrt-24.10"
+  REPO_BRANCH: "openwrt-25.12"
 
 on:
   workflow_dispatch:
