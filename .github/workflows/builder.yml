@@ -117,7 +117,6 @@ jobs:
         - 设备: r3s
         - 源码: ${{ env.REPO_URL }}
         - 版本: ${{ env.REPO_BRANCH }}
-        - 后台管理地址: 192.168.31.1
         EOF
         echo "status=success" >> $GITHUB_OUTPUT
 
