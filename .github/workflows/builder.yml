@@ -27,7 +27,6 @@ jobs:
     - name: 设置编译分支
       id: set_branch
       run: |
-        # 优先使用 repository_dispatch 传递的 tag，否则使用 workflow_dispatch 手动输入的 tag，默认使用 v25.12.0
         if [ -n "${{ github.event.client_payload.tag }}" ]; then
           REPO_BRANCH="${{ github.event.client_payload.tag }}"
         elif [ -n "${{ github.event.inputs.tag }}" ]; then
@@ -76,7 +75,6 @@ jobs:
       working-directory: /workdir
       run: |
         df -hT $PWD
-        # 使用动态的 REPO_BRANCH
         git clone -b $REPO_BRANCH --single-branch --depth 1 --filter=blob:none ${{ env.REPO_URL }} openwrt
         ln -sf /workdir/openwrt $GITHUB_WORKSPACE/openwrt
       env:
@@ -134,8 +132,6 @@ jobs:
       id: tag
       if: ${{ steps.compile.outputs.status == 'success' && env.UPLOAD_RELEASE == 'true' && !cancelled() }}
       run: |
-        # 使用编译的版本标签作为 release 标签的一部分
-        VERSION_TAG="${{ steps.set_branch.outputs.REPO_BRANCH }}"
         echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         cat > release.txt << EOF
         - 设备: r3s
