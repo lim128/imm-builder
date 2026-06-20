@@ -136,7 +136,7 @@ jobs:
       run: |
         # 使用编译的版本标签作为 release 标签的一部分
         VERSION_TAG="${{ steps.set_branch.outputs.REPO_BRANCH }}"
-        echo "release_tag=$(date +"%Y.%m.%d-%H%M")-${VERSION_TAG#v}" >> $GITHUB_OUTPUT
+        echo "release_tag=$(date +"%Y.%m.%d-%H%M")" >> $GITHUB_OUTPUT
         cat > release.txt << EOF
         - 设备: r3s
         - 源码: ${{ env.REPO_URL }}
